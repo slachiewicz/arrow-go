@@ -130,18 +130,10 @@ func NewOCFReader(r io.Reader, opts ...Option) (*OCFReader, error) {
 		rr.mem = memory.DefaultAllocator
 	}
 	rr.readerCtx, rr.readCancel = context.WithCancel(context.Background())
-	rr.readWG.Add(1)
-	go func() {
-		defer rr.readWG.Done()
-		rr.decodeOCFToChan()
-	}()
+	rr.readWG.Go(rr.decodeOCFToChan)
 
 	rr.initBuilder()
-	rr.readWG.Add(1)
-	go func() {
-		defer rr.readWG.Done()
-		rr.recordFactory()
-	}()
+	rr.readWG.Go(rr.recordFactory)
 	return rr, nil
 }
 
